@@ -23,6 +23,8 @@ export default function StreakTracker() {
   const [data, setData] = useState<StreakData | null>(null);
   const [contributionData, setContributionData] = useState<ContributionData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [minutesAgo, setMinutesAgo] = useState(0);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
@@ -61,6 +63,13 @@ export default function StreakTracker() {
     setFreezeLoading(true);
     fetch("/api/streak/freeze")
       .then((r) => r.json())
+      .then((d: StreakData) => setData(d))
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setLastUpdated(new Date());
+        setMinutesAgo(0);
+      });
       .then((d: FreezeData) => setFreeze(d))
       .catch(() => setFreeze(null))
       .finally(() => setFreezeLoading(false));
@@ -70,6 +79,14 @@ export default function StreakTracker() {
     fetchStreak();
     fetchFreeze();
   }, []);
+  useEffect(() => {
+    if (!lastUpdated) return;
+    const interval= setInterval(() => {
+     const diff= Math.floor((Date.now()-lastUpdated.getTime())/60000);
+    setMinutesAgo(diff);
+   }, 60000);
+   return ()=> clearInterval(interval);
+  }, [lastUpdated]);
 
   async function handleCancelFreeze() {
     if (!confirmCancel) {
@@ -240,6 +257,12 @@ export default function StreakTracker() {
             <div className="mt-1 text-xs text-[var(--muted-foreground)]">{stat.label}</div>
           </div>
         ))}
+      </div>
+      {lastUpdated && (
+        <p className="text-xs text-[var(--muted-foreground)] mt-2 text-right">
+          {minutesAgo === 0 ? "Updated just now" : `Updated ${minutesAgo} min ago`}
+        </p>
+      )}
       </div>
 
       {!freezeLoading && freeze?.hasFreeze && (

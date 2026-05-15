@@ -12,6 +12,8 @@ interface Goal {
 export default function GoalTracker() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [minutesAgo, setMinutesAgo] = useState(0);
   const [label, setLabel] = useState("");
   const [target, setTarget] = useState(7);
   const [creating, setCreating] = useState(false);
@@ -28,6 +30,12 @@ export default function GoalTracker() {
   useEffect(() => {
     loadGoals()
       .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setLastUpdated(new Date());
+        setMinutesAgo(0);
+      });
+  }, []);
       .finally(() => setLoading(false));
   }, [loadGoals]);
 
@@ -75,6 +83,15 @@ export default function GoalTracker() {
       setDeletingId(null);
     }
   }
+
+  useEffect(() => {
+    if (!lastUpdated) return;
+    const interval = setInterval(() => {
+      const diff = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
+      setMinutesAgo(diff);
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [lastUpdated]);
 
   if (loading) {
     return (
@@ -169,6 +186,11 @@ export default function GoalTracker() {
             );
           })}
         </ul>
+      )}
+      {lastUpdated && (
+        <p className="text-xs text-[var(--muted-foreground)] mt-2 text-right">
+          {minutesAgo === 0 ? "Updated just now" : `Updated ${minutesAgo} min ago`}
+        </p>
       )}
 
       <form onSubmit={handleCreate} className="mt-6 space-y-3 border-t border-[var(--border)] pt-4">

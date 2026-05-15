@@ -13,6 +13,8 @@ export default function TopRepos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [minutesAgo, setMinutesAgo] = useState(0);
 
   const fetchRepos = useCallback(() => {
     setLoading(true);
@@ -20,9 +22,24 @@ export default function TopRepos() {
     fetch(`/api/metrics/repos?days=${days}`)
       .then((r) => r.json())
       .then((d: { repos: Repo[] }) => setRepos(d.repos ?? []))
+      .catch(() => {})
+      .finally(() => {
+        setLoading(false);
+        setLastUpdated(new Date());
+        setMinutesAgo(0);
+      });
       .catch(() => setError("We couldn't load your top repositories right now. Please try again in a moment."))
       .finally(() => setLoading(false));
   }, [days]);
+  useEffect(() => {
+   if (!lastUpdated) return;
+   const interval = setInterval(() => {
+     const diff = Math.floor((Date.now() - lastUpdated.getTime()) / 60000);
+     setMinutesAgo(diff);
+    }, 60000);
+   return () => clearInterval(interval);
+  }, [lastUpdated]);
+
 
   useEffect(() => {
     fetchRepos();
@@ -100,6 +117,11 @@ export default function TopRepos() {
           })}
         </ul>
       )}
+      {lastUpdated && (
+        <p className="text-xs text-[var(--muted-foreground)] mt-2 text-right">
+         {minutesAgo === 0 ? "Updated just now" : `Updated ${minutesAgo} min ago`}
+        </p>
+     )}
     </div>
   );
 }
