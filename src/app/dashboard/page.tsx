@@ -15,6 +15,7 @@ import FriendComparison from "@/components/FriendComparison";
 import WeeklySummaryCard from "@/components/WeeklySummaryCard";
 import ExportButton from "@/components/ExportButton";
 import PersonalRecords from "@/components/PersonalRecords";
+import DiffTrendChart from "@/components/DiffTrendChart";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -46,6 +47,9 @@ export default async function DashboardPage() {
           <ContributionGraph />
           <div className="mt-6">
             <ContributionHeatmap />
+          </div>
+          <div className="mt-6">
+            <DiffTrendChart />
           </div>
         </div>
 
