@@ -1,4 +1,4 @@
-import LazyWidget from "@/components/LazyWidget";
+﻿import LazyWidget from "@/components/LazyWidget";
 import DiscussionsWidget from "@/components/DiscussionsWidget";
 import CommunityMetrics from "@/components/CommunityMetrics";
 import GoalTracker from "@/components/GoalTracker";
@@ -108,6 +108,11 @@ const PRReviewTrendChart = dynamic(
   { ssr: false, loading: () => <SkeletonCard /> },
 );
 
+const ProductiveHoursWidget = dynamic(
+  () => import("@/components/ProductiveHoursWidget"),
+  { ssr: false, loading: () => <SkeletonCard /> },
+);
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session) redirect("/");
@@ -200,6 +205,7 @@ export default async function DashboardPage() {
               <LazyWidget fallback={<SkeletonCard />}>
                 <CommitTimeChart />
               </LazyWidget>
+              <ProductiveHoursWidget />
             </div>
           </div>
         </section>
