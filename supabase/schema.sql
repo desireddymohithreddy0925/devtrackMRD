@@ -5,6 +5,8 @@ create table if not exists users (
   webhook_url  text,
   bio          text default '' check (char_length(bio) <= 500),
   is_public    boolean default false,
+  public_since timestamptz,
+  show_weekly_goals boolean default false,
   leaderboard_opt_in boolean default false,
   pinned_repos text[] default '{}',
   created_at   timestamptz default now(),
@@ -17,6 +19,11 @@ create table if not exists users (
   last_discord_notification_at timestamptz,
   organizations_config jsonb default '{}'::jsonb
 );
+
+CREATE INDEX IF NOT EXISTS users_leaderboard_opt_in_idx
+  ON users(leaderboard_opt_in)
+  WHERE leaderboard_opt_in = true;
+
 create table if not exists goals (
   id           text primary key default gen_random_uuid()::text,
   user_id      text not null references users(id) on delete cascade,
