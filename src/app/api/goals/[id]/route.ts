@@ -81,10 +81,17 @@ export async function PATCH(
     updates.recurrence = recurrence;
   }
 
-  if (current !== undefined) {
-    if (typeof current !== "number" || current < 0) {
+  if (current === undefined) {
+    if (title === undefined && target === undefined && unit === undefined && recurrence === undefined) {
       return Response.json(
-        { error: "Invalid current value" },
+        { error: "current must be a non-negative integer" },
+        { status: 400 }
+      );
+    }
+  } else {
+    if (typeof current !== "number" || !Number.isInteger(current) || current < 0) {
+      return Response.json(
+        { error: "current must be a non-negative integer" },
         { status: 400 }
       );
     }

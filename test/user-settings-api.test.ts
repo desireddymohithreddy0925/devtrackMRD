@@ -148,6 +148,8 @@ describe("User Settings API Endpoints", () => {
         timezone: "UTC",
         bio: "",
         discord_muted_until: null,
+        public_since: null,
+        show_weekly_goals: false,
       });
     });
   });
@@ -235,6 +237,8 @@ describe("User Settings API Endpoints", () => {
         timezone: "UTC",
         bio: "",
         discord_muted_until: null,
+        public_since: null,
+        show_weekly_goals: false,
       });
       
       // Verify that no database updates were triggered (mockUpdate not called because updates is empty)
@@ -264,12 +268,15 @@ describe("User Settings API Endpoints", () => {
         timezone: "UTC",
         bio: "",
         discord_muted_until: null,
+        public_since: null,
+        show_weekly_goals: false,
       });
       
       // Verify update database query was called with the updates object
       expect(mockUpdate).toHaveBeenCalledWith({
         is_public: false,
         pinned_repos: ["repo-2", "repo-3"],
+        public_since: null,
       });
     });
   });

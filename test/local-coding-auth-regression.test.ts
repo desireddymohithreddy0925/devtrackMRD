@@ -94,7 +94,7 @@ describe("Local coding API key lifecycle — regression for #1748", () => {
 
   // ── key creation stores hash in both columns ──────────────────────────────
 
-  it("POST /local-coding/keys stores the hash in api_key AND api_key_hash", async () => {
+  it("POST /local-coding/keys stores the hash in api_key_hash and display prefix in api_key", async () => {
     keysMocks.getServerSession.mockResolvedValue({ githubId: "gh-1", githubLogin: "alice" });
     keysMocks.resolveAppUser.mockResolvedValue({ id: "user-1" });
 
@@ -123,12 +123,12 @@ describe("Local coding API key lifecycle — regression for #1748", () => {
     const body = await res.json();
     const returnedPlaintextKey = body.key.api_key;
     const expectedHash = sha256(returnedPlaintextKey);
+    const expectedPrefix = returnedPlaintextKey.slice(0, 8);
 
-    // Both columns must receive the same hash so that either code path
-    // (api_key_hash-based OR api_key-based lookup) can authenticate the key.
+    // api_key must hold the non-sensitive display prefix, api_key_hash holds the SHA-256 digest
     expect(insertMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        api_key: expectedHash,
+        api_key: expectedPrefix,
         api_key_hash: expectedHash,
       })
     );

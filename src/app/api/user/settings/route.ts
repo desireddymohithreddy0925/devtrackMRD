@@ -178,21 +178,10 @@ export async function GET(req: NextRequest) {
 
   const user = await resolveAppUser(session.githubId, session.githubLogin);
   if (!user) {
-    // Graceful fallback if Supabase is not configured (local dev mock login)
-    return NextResponse.json({
-      id: "mock-user-id",
-      github_login: session.githubLogin || "mock-user",
-      bio: "This is a mock bio.",
-      is_public: false,
-      leaderboard_opt_in: false,
-      weekly_digest_opt_in: false,
-      pinned_repos: [],
-      has_wakatime_key: false,
-      discord_webhook_url: null,
-      timezone: "UTC",
-      webhook_url: null,
-      discord_muted_until: null,
-    });
+    return NextResponse.json(
+      { error: "Failed to fetch user settings" },
+      { status: 500 }
+    );
   }
 
   const result = await fetchUserSettings(user.id);
@@ -229,23 +218,11 @@ export async function PATCH(req: NextRequest) {
   }
 
   const user = await resolveAppUser(session.githubId, session.githubLogin);
-
   if (!user) {
-    // Graceful fallback if Supabase is not configured (local dev mock login)
-    return NextResponse.json({
-      id: "mock-user-id",
-      github_login: session.githubLogin || "mock-user",
-      bio: "This is a mock bio.",
-      is_public: false,
-      leaderboard_opt_in: false,
-      weekly_digest_opt_in: false,
-      pinned_repos: [],
-      has_wakatime_key: false,
-      discord_webhook_url: null,
-      timezone: "UTC",
-      webhook_url: null,
-      discord_muted_until: null,
-    });
+    return NextResponse.json(
+      { error: "User not found" },
+      { status: 404 }
+    );
   }
 
   let body: { is_public?: boolean; show_weekly_goals?: boolean; leaderboard_opt_in?: boolean; weekly_digest_opt_in?: boolean; pinned_repos?: string[]; wakatime_api_key?: string; discord_webhook_url?: string | null; timezone?: string; bio?: string; webhook_url?: string | null; discord_muted_until?: string | null };
@@ -386,6 +363,8 @@ export async function PATCH(req: NextRequest) {
       github_login: (settingsResult.data as any).github_login,
       bio: (settingsResult.data as any).bio ?? "",
       is_public: (settingsResult.data as any).is_public,
+      public_since: (settingsResult.data as any).public_since ?? null,
+      show_weekly_goals: (settingsResult.data as any).show_weekly_goals ?? false,
       leaderboard_opt_in: settingsResult.leaderboard_opt_in,
       weekly_digest_opt_in: settingsResult.weekly_digest_opt_in,
       pinned_repos: settingsResult.pinned_repos,
