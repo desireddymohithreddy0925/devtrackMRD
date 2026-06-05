@@ -1,4 +1,4 @@
-﻿import TodayFocusHero from "@/components/TodayFocusHero";
+import TodayFocusHero from "@/components/TodayFocusHero";
 import DashboardHeader from "@/components/DashboardHeader";
 import ExportButton from "@/components/ExportButton";
 import Link from "next/link";
@@ -20,9 +20,7 @@ export default async function DashboardPage() {
       <div className="min-h-screen bg-[var(--background)] px-4 py-8 text-[var(--foreground)] transition-colors sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
         <DashboardHeader />
 
-        {/* Quick actions */}
         <div className="mt-8 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Left side actions */}
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <Link
               href="/wrapped"
@@ -81,6 +79,35 @@ export default async function DashboardPage() {
               className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-indigo-500/20 hover:scale-[1.03] transition-all whitespace-nowrap"
             >
               Build Resume
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <div className="relative overflow-hidden rounded-xl border border-[var(--border)] bg-gradient-to-r from-emerald-950/20 via-teal-950/10 to-transparent p-5 shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="space-y-1.5 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                  Interactive
+                </span>
+                <span className="text-xs text-[var(--muted-foreground)]">
+                  Repo Health
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-[var(--foreground)]">
+                Repository Health Explorer
+              </h3>
+              <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
+                Radar charts, score breakdowns, and automated recommendations
+                for your most active repositories.
+              </p>
+            </div>
+            <Link
+              href="/dashboard/repo-health"
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-500/20 hover:scale-[1.03] transition-all whitespace-nowrap"
+            >
+              Explore Health
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
