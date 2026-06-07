@@ -80,7 +80,7 @@ export default function SignOutButton() {
                 </svg>
             )}
 
-            Sign out
+            Signout
         </button>
     )
 }

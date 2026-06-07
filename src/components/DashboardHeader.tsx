@@ -266,45 +266,61 @@ export default function DashboardHeader() {
 
         {/* Right Section */}
         {/* Right Section */}
-        <div className="w-full min-w-0 md:w-auto">
-          <div className="flex w-full min-w-0 items-center gap-3 overflow-x-auto pb-1 md:w-auto md:justify-end md:overflow-visible md:pb-0">
-            {isPublic === true && session?.githubLogin && (
-              <a
-                href={`/u/${session.githubLogin}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="primary-button inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold"
-                title="View your public profile"
-              >
-                Share Profile
-              </a>
-            )}
+      
+      {!isMobile && 
+         <div className="w-full min-w-0 md:w-auto">
+         <div className="flex w-full min-w-0 items-center gap-3 overflow-x-auto pb-1 md:w-auto md:justify-end md:overflow-visible md:pb-0">
+           {isPublic === true && session?.githubLogin && (
+             <a
+               href={`/u/${session.githubLogin}`}
+               target="_blank"
+               rel="noopener noreferrer"
+               className="primary-button inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold"
+               title="View your public profile"
+             >
+               Share Profile
+             </a>
+           )}
 
-            <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card-muted)]/50 p-2 shadow-sm backdrop-blur-sm">
-              <div className="transition-transform duration-200 hover:scale-[1.05]">
-                <KeyboardShortcuts />
-              </div>
 
-              <div className="transition-transform duration-200 hover:scale-[1.05]">
-                <NotificationBell />
-              </div>
+           <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card-muted)]/50 p-2 shadow-sm backdrop-blur-sm">
+             <div className="transition-transform duration-200 hover:scale-[1.05]">
+               <KeyboardShortcuts />
+             </div>
 
-              <div className="transition-transform duration-200 hover:scale-[1.05]">
-                <UserAvatar />
-              </div>
+             <div className="transition-transform duration-200 hover:scale-[1.05]">
+               <NotificationBell />
+             </div>
 
-              <div className="transition-transform duration-200 hover:rotate-12">
-                <ThemeToggle />
-              </div>
+             <div className="transition-transform duration-200 hover:scale-[1.05]">
+               <UserAvatar />
+             </div>
 
-              <div className="transition-transform duration-200 hover:scale-[1.05]">
-                <SignOutButton />
-              </div>
-            </div>
-          </div>
+             <div className="transition-transform duration-200 hover:rotate-12">
+               <ThemeToggle />
+             </div>
+
+             <div className="transition-transform duration-200 hover:scale-[1.05]">
+               <SignOutButton />
+             </div>
+           </div>
+         </div>
+       </div>
+      
+           }
+             {/* Mobile hamburger button */}
+      
+{isMobile &&
+      <div className="flex flex-col md:flex-row justify-start items-start self-stretch">
+
+        <div className="transition-transform duration-200 hover:scale-[1.05]">
+              <SignOutButton />
+        </div>
+        <div className="flex flex-row">
+        <div className="transition-transform duration-200 hover:scale-[1.05]">
+          <NotificationBell />
         </div>
 
-        {/* Mobile hamburger button */}
         <button
         type="button"
         className="inline-flex items-center justify-center self-start rounded-xl border border-[var(--border)] bg-[var(--card-muted)]/70 p-2 text-[var(--card-foreground)] shadow-sm transition-all duration-200 hover:border-[var(--accent)] hover:text-[var(--accent)]  "
@@ -347,30 +363,33 @@ export default function DashboardHeader() {
       </button>
 
       </div>
+     
+     
+    </div>
+
+  }
+       
+</div>
 
       {/* Mobile dropdown */}
       {menuOpen && (
         <div className="mt-4 space-y-3 rounded-2xl border border-[var(--border)] bg-[var(--card-muted)]/70 p-4 shadow-sm backdrop-blur-sm ">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="transition-transform duration-200 hover:scale-[1.05] flex-1">
+          <div className="flex flex-col flex-wrap md:flex-row md:justify-evenly md:items-center">
+            <div className="transition-transform duration-200 hover:scale-[1.05] ">
               <KeyboardShortcuts />
             </div>
 
-            <div className="transition-transform duration-200 hover:scale-[1.05]">
-              <NotificationBell />
-            </div>
+            
 
             <div className="transition-transform duration-200 hover:scale-[1.05]">
               <UserAvatar />
             </div>
 
-            <div className="transition-transform duration-200 hover:rotate-12 flex-1">
+            <div className="transition-transform duration-200 hover:rotate-12 ">
               <ThemeToggle />
             </div>
 
-            <div className="transition-transform duration-200 hover:scale-[1.05]">
-              <SignOutButton />
-            </div>
+            
           </div>
 
           {isPublic === true && session?.githubLogin && (
