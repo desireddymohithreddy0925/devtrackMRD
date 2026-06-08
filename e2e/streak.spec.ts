@@ -163,7 +163,7 @@ test("[Streak E2E] streak widget section is rendered on dashboard", async ({
 test("[Streak E2E] streak widget shows the mocked current streak value", async ({
   page,
 }) => {
-  await page.goto("/dashboard", { waitUntil: "networkidle" });
+  await page.goto("/dashboard", { waitUntil: "load" });
   await expect(
     page.getByRole("heading", { name: "Dashboard", exact: true })
   ).toBeVisible({ timeout: 30_000 });
@@ -190,7 +190,7 @@ test("[Streak E2E] streak widget shows the mocked longest streak value", async (
 test("[Streak E2E] freeze button is present in the streak widget", async ({
   page,
 }) => {
-  await page.goto("/dashboard", { waitUntil: "networkidle" });
+  await page.goto("/dashboard", { waitUntil: "load" });
   await expect(
     page.getByRole("heading", { name: "Dashboard", exact: true })
   ).toBeVisible({ timeout: 30_000 });
