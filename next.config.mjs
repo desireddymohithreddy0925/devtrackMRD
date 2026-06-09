@@ -156,6 +156,7 @@ const nextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
           {
             // OWASP recommends a minimum of 2 years (63,072,000 seconds).
             // preload submits the domain to the browser HSTS preload lists,
@@ -164,7 +165,6 @@ const nextConfig = {
             value: "max-age=63072000; includeSubDomains; preload",
           },
           { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "X-DNS-Prefetch-Control", value: "off" },
           {
             key: "Content-Security-Policy",
             // base-uri 'none' — blocks <base> tag injection that could hijack
