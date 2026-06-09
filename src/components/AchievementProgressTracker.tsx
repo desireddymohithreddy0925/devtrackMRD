@@ -31,7 +31,7 @@ export default function AchievementProgressTracker() {
         <h2 className="mb-4 text-lg font-semibold text-[var(--card-foreground)]">
           Achievement Progress
         </h2>
-        <div className="space-y-4">
+        <div className="space-y-4" role="status" aria-label="Loading achievements" aria-busy="true">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-12 w-full rounded-lg skeleton-shimmer" />
           ))}
@@ -66,7 +66,7 @@ export default function AchievementProgressTracker() {
                 {est.title}
               </span>
               <span className="text-xs font-medium text-[var(--muted-foreground)] bg-[var(--card-muted)] px-2 py-1 rounded-full">
-                {est.current} / {est.nextTier}
+                {est.nextTier === null ? "Maxed" : `${est.current} / ${est.nextTier}`}
               </span>
             </div>
             <Progress value={est.percentage} className="h-2.5" />

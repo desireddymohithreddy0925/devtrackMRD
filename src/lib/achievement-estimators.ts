@@ -4,7 +4,7 @@ export interface AchievementEstimate {
   slug: string;
   title: string;
   current: number;
-  nextTier: number;
+  nextTier: number | null;
   percentage: number;
   description: string;
 }
@@ -12,15 +12,15 @@ export interface AchievementEstimate {
 const TIERS_STANDARD = [1, 16, 128, 1024];
 const TIERS_STARSTRUCK = [16, 128, 512, 4096];
 
-function calculateNextTier(current: number, tiers: number[]): number {
+function calculateNextTier(current: number, tiers: number[]): number | null {
   for (const tier of tiers) {
     if (current < tier) return tier;
   }
-  return tiers[tiers.length - 1]; // Maxed out
+  return null; // Maxed out
 }
 
-function calculatePercentage(current: number, nextTier: number): number {
-  if (current >= nextTier) return 100;
+function calculatePercentage(current: number, nextTier: number | null): number {
+  if (nextTier === null || current >= nextTier) return 100;
   return Math.floor((current / nextTier) * 100);
 }
 

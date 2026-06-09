@@ -224,7 +224,7 @@ function SignInContent() {
               }
 
               if (res?.url) {
-                const url = new URL(res.url);
+                const url = new URL(res.url, window.location.origin);
                 // NextAuth redirects to ?csrf=true or back to the signin page if environment mismatch occurs
                 if (url.searchParams.get("csrf") === "true" || url.pathname === "/auth/signin") {
                   toast.error(
