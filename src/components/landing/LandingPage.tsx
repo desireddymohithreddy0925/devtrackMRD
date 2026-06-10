@@ -644,7 +644,7 @@ function HeroSection() {
           </div>
           {/* Bento Content */}
           <div style={{ padding: 20 }}>
-          646 <div
+          <div
   style={{
     width: '100%',
     maxWidth: 380,
