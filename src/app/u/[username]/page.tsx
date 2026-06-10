@@ -14,11 +14,8 @@ import PinnedReposWidget from "@/components/PinnedReposWidget";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { Moon, Sun } from "lucide-react";
 import { authOptions } from "@/lib/auth";
-import { getUserByGithubId, getUserByUsername } from "@/lib/supabase";
-import {
-  fetchPublicProfile as fetchPublicProfileLib,
-  type PublicProfileData,
-} from "@/lib/public-profile-data";
+import { getUserByGithubId } from "@/lib/supabase";
+import type { PublicProfileData } from "@/lib/public-profile-data";
 
 // Extend tracking structures to forward gamification flags seamlessly downstream
 interface ExtendedPublicProfileData extends PublicProfileData {
@@ -27,42 +24,53 @@ interface ExtendedPublicProfileData extends PublicProfileData {
   isEarlyBird: boolean;
 }
 
+function getBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "http://localhost:3000"
+  );
+}
+
 async function fetchPublicProfile(
   username: string,
   options: { includeAchievements?: boolean } = {}
 ): Promise<ExtendedPublicProfileData | null> {
-  const user = await getUserByUsername(username);
+  try {
+    const url = new URL(`/api/public/${encodeURIComponent(username)}`, getBaseUrl());
+    if (options.includeAchievements) url.searchParams.set("achievements", "1");
 
-  if (!user) return null;
+    const res = await fetch(url.toString(), { cache: "no-store" });
+    if (!res.ok) return null;
 
-  const canonicalUsername = user.github_login.toLowerCase();
+    const base: PublicProfileData = await res.json();
 
-  if (username !== canonicalUsername) {
-    redirect(`/u/${canonicalUsername}`);
-  }
-
-  const base = await fetchPublicProfileLib(username, options);
-
-  if (!base) return null;
-
-  // Compute Night Owl / Early Bird from repos
-  let nightOwlCount = 0;
-  let earlyBirdCount = 0;
-
-  (base.repos || []).forEach((repo: any) => {
-    if (repo.last_commit_date || repo.updatedAt) {
-      const commitHour = new Date(repo.last_commit_date || repo.updatedAt).getHours();
-      if (commitHour >= 0 && commitHour <= 4) nightOwlCount++;
-      if (commitHour >= 5 && commitHour <= 8) earlyBirdCount++;
+    const canonicalUsername = base.username.toLowerCase();
+    if (username !== canonicalUsername) {
+      redirect(`/u/${canonicalUsername}`);
     }
-  });
 
-  return {
-    ...base,
-    userId: user.id,
-    isNightOwl: nightOwlCount >= 1,
-    isEarlyBird: earlyBirdCount >= 1,
-  };
+    // Compute Night Owl / Early Bird from repos
+    let nightOwlCount = 0;
+    let earlyBirdCount = 0;
+
+    (base.repos || []).forEach((repo: any) => {
+      if (repo.last_commit_date || repo.updatedAt) {
+        const commitHour = new Date(repo.last_commit_date || repo.updatedAt).getHours();
+        if (commitHour >= 0 && commitHour <= 4) nightOwlCount++;
+        if (commitHour >= 5 && commitHour <= 8) earlyBirdCount++;
+      }
+    });
+
+    return {
+      ...base,
+      userId: "",
+      isNightOwl: nightOwlCount >= 1,
+      isEarlyBird: earlyBirdCount >= 1,
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function getLoggedInGitHubUsername() {
@@ -81,12 +89,7 @@ async function getLoggedInGitHubUsername() {
 }
 
 function getProfileUrl(username: string) {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000";
-
-  return `${baseUrl}/u/${username}`;
+  return `${getBaseUrl()}/u/${username}`;
 }
 
 export async function generateMetadata({
@@ -95,29 +98,36 @@ export async function generateMetadata({
   params: Promise<{ username: string }>;
 }): Promise<Metadata> {
   const { username } = await params;
-  const user = await getUserByUsername(username);
   const profileUrl = getProfileUrl(username);
 
-  if (!user) {
+  let userExists = false;
+  try {
+    const res = await fetch(
+      new URL(`/api/public/${encodeURIComponent(username)}`, getBaseUrl()).toString(),
+      { cache: "no-store" }
+    );
+    userExists = res.ok;
+  } catch {
+    userExists = false;
+  }
+
+  if (!userExists) {
     return {
       title: "Profile Not Found",
       description: "This profile is not available or is private.",
     };
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.NEXTAUTH_URL ||
-    "http://localhost:3000";
+  const baseUrl = getBaseUrl();
 
   // Build dynamic OG image URL
   const ogImageUrl = new URL(`${baseUrl}/api/og/user`);
-ogImageUrl.searchParams.set("username", username);
-ogImageUrl.searchParams.set("name", username);
-ogImageUrl.searchParams.set("avatar", `https://avatars.githubusercontent.com/${username}`);
-ogImageUrl.searchParams.set("topLang", "Code");
-ogImageUrl.searchParams.set("streak", "0");
-ogImageUrl.searchParams.set("commits", "0");
+  ogImageUrl.searchParams.set("username", username);
+  ogImageUrl.searchParams.set("name", username);
+  ogImageUrl.searchParams.set("avatar", `https://avatars.githubusercontent.com/${username}`);
+  ogImageUrl.searchParams.set("topLang", "Code");
+  ogImageUrl.searchParams.set("streak", "0");
+  ogImageUrl.searchParams.set("commits", "0");
 
   const title = `${username}'s DevTrack Profile`;
   const description = `GitHub stats and coding activity for ${username}. View commits, streaks, and top repositories.`;
