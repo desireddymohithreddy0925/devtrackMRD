@@ -1,6 +1,5 @@
 import { type NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-import CredentialsProvider from "next-auth/providers/credentials";
 import { syncGitHubAchievementsForUser } from "./github-achievements";
 import { supabaseAdmin } from "./supabase";
 
@@ -28,28 +27,10 @@ export const authOptions: NextAuthOptions = {
         params: { scope: "read:user user:email repo read:discussion read:org" },
       },
     }),
-    CredentialsProvider({
-      id: "credentials",
-      name: "Dev Mock Credentials",
-      credentials: {
-        username: { label: "Username", type: "text" },
-      },
-      async authorize(credentials) {
-        const username = credentials?.username || "dev-user";
-        return {
-          id: "mock-dev-id-123",
-          name: username,
-          email: `${username}@example.com`,
-          login: username,
-          accessToken: "mock-token",
-        };
-      },
-    }),
   ],
   pages: {
     signIn: "/auth/signin",
   },
-
   // Use NextAuth's default cookie behavior (secure cookies on HTTPS deployments),
   // which keeps Playwright E2E (http://127.0.0.1) aligned with the default
   // `next-auth.session-token` cookie name.
@@ -62,25 +43,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: SESSION_MAX_AGE,
   },
   callbacks: {
-    async signIn({ account, profile, user }) {
-      if (account?.provider === "credentials" && user) {
-        if (supabaseAdmin) {
-          try {
-            await supabaseAdmin.from("users").upsert(
-              {
-                github_id: user.id,
-                github_login: user.name || "dev-user",
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: "github_id" }
-            );
-          } catch (e) {
-            console.warn("[auth] mock user DB upsert failed:", e);
-          }
-        }
-        return true;
-      }
-
+    async signIn({ account, profile }) {
       if (account?.provider === "github" && profile) {
         const p = profile as { id: number; login: string; email?: string };
 

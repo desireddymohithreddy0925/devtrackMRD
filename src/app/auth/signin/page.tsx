@@ -257,33 +257,6 @@ function SignInContent() {
           Sign in with GitHub
         </button>
 
-        {process.env.NODE_ENV === "development" && (
-          <button
-            type="button"
-            onClick={async () => {
-              const username = prompt("Enter mock GitHub username:", "dev-user") || "dev-user";
-              try {
-                await signIn("credentials", {
-                  username,
-                  callbackUrl: "/dashboard",
-                });
-              } catch (err) {
-                toast.error("Failed mock sign in");
-              }
-            }}
-            style={{
-              marginTop: 12,
-              background: "var(--control)",
-              border: "1px solid var(--border)",
-              color: "var(--foreground)",
-            }}
-            className="relative w-full inline-flex items-center justify-center gap-3 rounded-xl py-3 font-semibold transition-colors hover:bg-[var(--card-muted)]"
-          >
-            Sign in with Dev Mock Credentials
-          </button>
-        )}
-
-
         <div
           style={{
             fontFamily: MONO,
