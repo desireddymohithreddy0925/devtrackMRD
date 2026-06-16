@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+// Note: Adjust this import based on your specific Supabase client setup
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import type { RoomMessage } from '@/types/rooms';
-
-const POLL_INTERVAL_MS = 5_000;
 
 interface Props {
   roomId: string;
@@ -14,46 +14,38 @@ interface Props {
 
 export default function MessageFeed({ roomId, currentUser, messages, onNewMessages }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
-  const latestTimestampRef = useRef<string | null>(
-    messages.length > 0 ? messages[messages.length - 1].created_at : null
-  );
-
-  // Keep the latest-timestamp cursor in sync as the message list grows.
-  useEffect(() => {
-    if (messages.length > 0) {
-      latestTimestampRef.current = messages[messages.length - 1].created_at;
-    }
-  }, [messages]);
 
   // Scroll to bottom whenever new messages arrive.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Poll the authenticated API route for messages from other participants.
-  // The Supabase anon key carries no JWT, so the RLS policies on room_messages
-  // block all Realtime broadcasts for NextAuth-based sessions. Polling the
-  // server-side authenticated route is the correct approach.
+  // Establish Supabase Realtime subscription
   useEffect(() => {
-    const poll = async () => {
-      const after = latestTimestampRef.current;
-      if (!after) return;
-      try {
-        const res = await fetch(
-          `/api/rooms/${roomId}/messages?after=${encodeURIComponent(after)}`
-        );
-        if (!res.ok) return;
-        const incoming: RoomMessage[] = await res.json();
-        if (incoming.length > 0) {
-          onNewMessages(incoming);
+    const supabase = createClientComponentClient();
+    
+    const channel = supabase
+      .channel(`realtime:room:${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `room_id=eq.${roomId}` // Assumes your foreign key column is 'room_id'
+        },
+        (payload) => {
+          // Intercept the INSERT event and append the new payload
+          const incomingMessage = payload.new as RoomMessage;
+          onNewMessages([incomingMessage]);
         }
-      } catch {
-        // Network error — silently retry on the next tick.
-      }
-    };
+      )
+      .subscribe();
 
-    const id = setInterval(poll, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+    // Explicit cleanup routine to unsubscribe and remove the channel instance
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [roomId, onNewMessages]);
 
   return (
