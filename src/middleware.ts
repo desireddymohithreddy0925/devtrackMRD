@@ -47,17 +47,17 @@ const RATE_LIMIT_CONFIG = {
   /**
    * Maximum allowed API metrics requests for authenticated users in the window.
    */
-  AUTHENTICATED_LIMIT: isDev ? 5000 : 60,
+  AUTHENTICATED_LIMIT: isTest ? 5000 : 60,
 
   /**
    * Maximum allowed API metrics requests for anonymous users in the window.
    */
-  ANONYMOUS_LIMIT: isDev ? 1000 : 10,
+  ANONYMOUS_LIMIT: isTest ? 1000 : 10,
 
   /**
    * Maximum allowed sign-in attempts for authentication routes in the window.
    */
-  AUTH_LIMIT: isDev ? 1000 : AUTH_LIMIT,
+  AUTH_LIMIT: isTest ? 1000 : AUTH_LIMIT,
 } as const;
 
 // Warn in production if Upstash Redis is not configured (rates reset on cold starts)
