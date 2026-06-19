@@ -308,6 +308,18 @@ export async function middleware(req: NextRequest) {
     if (!authResult.allowed) {
       console.warn("auth_rate_limit_hit", { ip, path: pathname });
       const headers = buildHeaders({ ...authResult, limit: authLimit });
+
+      const acceptHeader = req.headers.get("accept") ?? "";
+      if (acceptHeader.includes("text/html")) {
+        const url = req.nextUrl.clone();
+        url.pathname = "/auth/signin";
+        url.search = "?error=RateLimit";
+        return NextResponse.redirect(url, {
+          status: 307,
+          headers,
+        });
+      }
+
       return NextResponse.json(
         { error: "Too many authentication attempts. Please try again later." },
         { status: 429, headers }
