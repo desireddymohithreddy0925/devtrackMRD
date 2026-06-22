@@ -105,7 +105,7 @@ function computeLongestGap(sortedDates: string[]): number {
   return longestGap;
 }
 
-function scoreToGrade(score: number): ConsistencyScoreResult["grade"] {
+export function scoreToGrade(score: number): ConsistencyScoreResult["grade"] {
   if (score >= 90) return "S";
   if (score >= 75) return "A";
   if (score >= 60) return "B";
@@ -113,7 +113,7 @@ function scoreToGrade(score: number): ConsistencyScoreResult["grade"] {
   return "D";
 }
 
-function getImprovementTip(score: number): string {
+export function getImprovementTip(score: number): string {
   if (score < 40) {
     return "Try committing at least once every 2-3 days to build consistency";
   }
