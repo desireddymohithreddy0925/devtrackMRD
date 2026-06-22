@@ -2,9 +2,10 @@ import {
   scoreToGrade,
   getImprovementTip,
   isRecentlyActiveFromScore,
+  calculateConsistencyScore,
   ConsistencyScoreResult
 } from "../src/lib/consistency-score";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 describe("consistency-score utility functions", () => {
   describe("scoreToGrade", () => {
@@ -79,34 +80,87 @@ describe("consistency-score utility functions", () => {
     });
 
     it("should return true when recent activity bonus is >= 10 points", () => {
-      // withoutRecent = Math.round( (100/100)*40 + 1.0*30 + (20 - min(20, 0/7)) )
-      // withoutRecent = Math.round( 40 + 30 + 20 ) = 90
-      // score = 100
-      // score - withoutRecent = 10 >= 10 -> true
       const data = createBaseData(100, 100, 1.0, 0);
       expect(isRecentlyActiveFromScore(data)).toBe(true);
     });
 
     it("should return false when recent activity bonus is < 10 points", () => {
-      // withoutRecent = Math.round( (50/100)*40 + 0.5*30 + (20 - min(20, 14/7)) )
-      // withoutRecent = Math.round( 20 + 15 + (20 - 2) ) = Math.round(35 + 18) = 53
-      // score = 58
-      // score - withoutRecent = 5 < 10 -> false
       const data = createBaseData(58, 50, 0.5, 14);
       expect(isRecentlyActiveFromScore(data)).toBe(false);
     });
 
     it("should correctly handle boundaries", () => {
-      // longestGap = 35 -> min(20, 35/7) -> min(20, 5) -> 5. gapPoints = 20 - 5 = 15.
-      // withoutRecent = 20 + 15 + 15 = 50.
-      
-      // if score = 60, diff = 10 -> true
       const data1 = createBaseData(60, 50, 0.5, 35); 
       expect(isRecentlyActiveFromScore(data1)).toBe(true);
 
-      // if score = 59, diff = 9 -> false
       const data2 = createBaseData(59, 50, 0.5, 35);
       expect(isRecentlyActiveFromScore(data2)).toBe(false);
+    });
+  });
+
+  describe("calculateConsistencyScore", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      // Set fixed date: October 20th, 2023.
+      vi.setSystemTime(new Date("2023-10-20T12:00:00Z"));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should handle an empty set", () => {
+      const result = calculateConsistencyScore(new Set());
+      expect(result.score).toBeGreaterThanOrEqual(0);
+      expect(result.score).toBeLessThanOrEqual(100);
+      expect(["S", "A", "B", "C", "D"]).toContain(result.grade);
+      expect(result.monthlyTrend).toHaveLength(6);
+      expect(result.longestGap).toBe(0);
+    });
+
+    it("should handle a single date", () => {
+      const result = calculateConsistencyScore(new Set(["2023-10-18"]));
+      expect(result.score).toBeGreaterThanOrEqual(0);
+      expect(result.score).toBeLessThanOrEqual(100);
+      expect(["S", "A", "B", "C", "D"]).toContain(result.grade);
+      expect(result.monthlyTrend).toHaveLength(6);
+      expect(result.longestGap).toBe(0);
+    });
+
+    it("should handle multiple dates in one week (gap-free)", () => {
+      const result = calculateConsistencyScore(new Set([
+        "2023-10-16",
+        "2023-10-17",
+        "2023-10-18",
+        "2023-10-19",
+        "2023-10-20",
+      ]));
+      expect(result.score).toBeGreaterThanOrEqual(0);
+      expect(result.score).toBeLessThanOrEqual(100);
+      expect(["S", "A", "B", "C", "D"]).toContain(result.grade);
+      expect(result.monthlyTrend).toHaveLength(6);
+      // gap-free should have 0 gap
+      expect(result.longestGap).toBe(0);
+    });
+
+    it("should handle multiple dates spanning weeks and months (gapful)", () => {
+      const result = calculateConsistencyScore(new Set([
+        "2023-08-01",
+        "2023-09-15",
+        "2023-10-01",
+        "2023-10-18",
+      ]));
+      expect(result.score).toBeGreaterThanOrEqual(0);
+      expect(result.score).toBeLessThanOrEqual(100);
+      expect(["S", "A", "B", "C", "D"]).toContain(result.grade);
+      expect(result.monthlyTrend).toHaveLength(6);
+      
+      // The largest gap is between 2023-08-01 and 2023-09-15.
+      // August 1st to August 31st = 30 days
+      // August 31st to September 15th = 15 days
+      // Total diff = 45 days.
+      // Gap is diff - 1 = 44 days.
+      expect(result.longestGap).toBe(44);
     });
   });
 });
