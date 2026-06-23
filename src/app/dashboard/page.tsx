@@ -96,6 +96,11 @@ const PRReviewTrendChart = dynamic(
   { loading: () => <SkeletonCard /> },
 );
 
+const WeeklyProgressSummary = dynamic(
+  () => import("@/components/WeeklyProgressSummary"),
+  { loading: () => <SkeletonCard /> },
+);
+
 export default async function DashboardPage() {
   // In the production standalone Playwright build, getServerSession can fail to
   // read the test JWT cookie. Decode the cookie directly as a fallback so that
@@ -190,6 +195,13 @@ export default async function DashboardPage() {
               </div>
             </div>
           </section>
+
+          {/* Weekly Summary */}
+          <div className="mb-12">
+            <LazyWidget fallback={<SkeletonCard />}>
+              <WeeklyProgressSummary />
+            </LazyWidget>
+          </div>
 
             {/* Right: streak + coding time */}
             <div className="flex flex-col gap-6">
