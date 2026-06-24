@@ -22,7 +22,7 @@ import dynamic from "next/dynamic";
 
 const WeeklyCodingInsightsCard = dynamic(
   () => import("@/components/WeeklyCodingInsightsCard"),
-  { ssr: false, loading: () => <SkeletonCard /> },
+  { loading: () => <SkeletonCard /> },
 );
 export default async function DashboardPage() {
   // In the production standalone Playwright build, getServerSession can fail to
