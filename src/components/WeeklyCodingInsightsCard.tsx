@@ -128,7 +128,12 @@ export default function WeeklyCodingInsightsCard() {
     );
   }
 
-  const hasActivity = summary && (summary.commits.current > 0 || summary.prs.thisWeek.opened > 0 || summary.prs.thisWeek.merged > 0 || summary.issues.thisWeek > 0);
+  const hasActivity = summary && summary.commits && summary.prs && summary.issues && (
+    summary.commits.current > 0 || 
+    summary.prs.thisWeek.opened > 0 || 
+    summary.prs.thisWeek.merged > 0 || 
+    summary.issues.thisWeek > 0
+  );
 
   return (
     <div className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm">
@@ -144,7 +149,7 @@ export default function WeeklyCodingInsightsCard() {
           </div>
           <h3 className="text-base font-semibold text-[var(--card-foreground)]">No activity this week</h3>
           <p className="mt-1 text-sm text-[var(--muted-foreground)] max-w-sm">
-            It looks like you haven't made any commits, opened PRs, or closed issues in the past 7 days. Time to get coding!
+            It looks like you haven&apos;t made any commits, opened PRs, or closed issues in the past 7 days. Time to get coding!
           </p>
         </div>
       ) : (
