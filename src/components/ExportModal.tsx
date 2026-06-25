@@ -27,7 +27,7 @@ export default function ExportModal({ isOpen, onClose, onLegacyExport, reportNam
     { id: "repo-analytics", name: "Repo Analytics" },
     { id: "pr-metrics", name: "PR Metrics" },
     { id: "activity-ring", name: "Activity Ring" },
-    { id: "coding-insights", name: "Coding Insights" },
+    { id: "coding-activity-insights", name: "Coding Insights" },
   ];
 
   const handleVisualExport = async () => {

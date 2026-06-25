@@ -34,6 +34,9 @@ export default function SortableDashboardWidget({
   } = useSortable({
     id,
     disabled: !isEditing,
+    resizeObserverConfig: {
+      useResizeObserver: true,
+    },
   });
 
   const style: CSSProperties = {
@@ -44,6 +47,7 @@ export default function SortableDashboardWidget({
 
   return (
     <div
+      id={id}
       ref={setNodeRef}
       style={style}
       className={`relative min-w-0 ${className} ${
