@@ -24,7 +24,6 @@ describe("goals-sync-utils", () => {
 
     it("should return null for null and undefined values", () => {
       expect(extractValidRepoFromGoal(createGoal({ repo: null, repository: null, repo_name: null }))).toBeNull();
-      // @ts-expect-error Testing undefined which might happen at runtime
       expect(extractValidRepoFromGoal(createGoal({ repo: undefined }))).toBeNull();
     });
 
