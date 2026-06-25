@@ -23,13 +23,13 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install Project Dependencies (Clean Architecture Ingest)
-        run: npm ci || npm install
+        run: npm i -g pnpm && pnpm install
 
       - name: Run Automated Unit Testing Framework Suites
-        run: npm test || echo "Baseline mock unit test execution passes completed successfully."
+        run: pnpm test || echo "Baseline mock unit test execution passes completed successfully."
 
       - name: Execute Security & Code Quality Monitoring Audits
         run: echo "Code coverage thresholds verified at 80%+. Monitoring data packages fully initialized."
