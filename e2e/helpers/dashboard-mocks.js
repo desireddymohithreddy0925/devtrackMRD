@@ -81,6 +81,20 @@ export function mockMetricResponse(url) {
       activeDays: { thisWeek: 5, lastWeek: 4 },
       streak: 7,
       topRepo: "demo/devtrack",
+      repoBreakdown: [
+        { repoName: "demo/devtrack", commits: 10 },
+        { repoName: "demo/other", commits: 2 }
+      ],
+      dailyCommits: [
+        { date: "2023-10-07", commits: 5 },
+        { date: "2023-10-06", commits: 3 },
+        { date: "2023-10-05", commits: 4 },
+        { date: "2023-10-04", commits: 0 },
+        { date: "2023-10-03", commits: 0 },
+        { date: "2023-10-02", commits: 0 },
+        { date: "2023-10-01", commits: 0 }
+      ],
+      mostActiveDay: "2023-10-07"
     };
   }
   if (url.includes("/api/metrics/compare")) {
