@@ -17,12 +17,12 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with:
-          version: 9
+          version: 11
 
       - name: Initialize Node.js Environment
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install Project Dependencies (Clean Architecture Ingest)
