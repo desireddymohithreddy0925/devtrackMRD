@@ -35,6 +35,8 @@ describe("github types and interfaces", () => {
         stargazers_count: 100,
         pushed_at: "2024-01-15T10:00:00Z",
         updated_at: "2024-01-15T10:00:00Z",
+        created_at: "2024-01-15T10:00:00Z",
+        language: "TypeScript",
       };
       expect(repo.full_name).toBe("owner/repo");
       expect(repo.visibility).toBe("public");
@@ -51,6 +53,8 @@ describe("github types and interfaces", () => {
         stargazers_count: 0,
         pushed_at: null,
         updated_at: "2024-01-15T10:00:00Z",
+        created_at: "2024-01-15T10:00:00Z",
+        language: null,
         archived: true,
       };
       expect(repo.archived).toBe(true);
