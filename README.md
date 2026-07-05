@@ -206,7 +206,7 @@ To deploy your own instance, see the **[Self-Hosting Guide](./docs/self-hosting.
 ```bash
 git clone https://github.com/Priyanshu-byte-coder/devtrack.git
 cd devtrack
-pnpm install
+ppnpm install
 ```
 
 **2. Set up Supabase**
@@ -490,7 +490,7 @@ Questions are welcome anytime in [Discussions](https://github.com/Priyanshu-byte
 | pnpm | >= 9 | `pnpm -v` |
 | Git | any | `git --version` |
 
-Install pnpm via `corepack enable` or `npm install -g pnpm` if you don't already have it.
+Install pnpm via `corepack enable` or `pnpm install -g pnpm` if you don't already have it.
 
 If your local versions differ and you hit install/build errors, aligning your Node.js/pnpm version with the table above is the first thing to check.
 
