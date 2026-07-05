@@ -113,7 +113,7 @@
     "@swc/core-linux-x64-gnu": "^1.15.41"
   },
   "pnpm": {
-    "onlyBuiltDependencies": [
+    "approvedBuilds": [
       "@parcel/watcher",
       "@scarf/scarf",
       "@sentry/cli",
