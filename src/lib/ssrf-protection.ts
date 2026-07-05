@@ -14,7 +14,7 @@ function ipToNumber(ip: string): number {
   if (parts.length !== 4) return NaN;
   const numParts = parts.map(Number);
   if (numParts.some((n) => isNaN(n) || n < 0 || n > 255 || !Number.isInteger(n))) return NaN;
-  return ((numParts[0] << 24) | (numParts[1] << 16) | (numParts[2] << 8) | numParts[3]) >>> 0;
+  return (numParts[0] * 16777216) + (numParts[1] * 65536) + (numParts[2] * 256) + numParts[3];
 }
 
 function isPrivateIP(ip: string): boolean {
