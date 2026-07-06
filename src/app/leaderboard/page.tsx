@@ -104,14 +104,14 @@ async function LeaderboardTable({
             title={
               hasFilters
                 ? "No leaderboard results for these filters"
-                : "No public profiles yet"
+                : "No leaderboard data available"
             }
             description={
               hasFilters
                 ? "Try a broader language or time filter, or clear filters to view the full leaderboard."
                 : "No public profiles yet - be the first to enable yours in Settings!"
             }
-            actionLabel="Go to Settings"
+            actionLabel="Sync Dashboard"
             actionHref="/dashboard/settings"
           />
         ) : (

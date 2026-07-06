@@ -7,6 +7,7 @@ import { useDashboardWidgetA11y } from "@/components/dashboard/DashboardWidgetA1
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import PRStatusDonutChart from "./PRStatusDonutChart";
 import MiniPRTrendChart from "./MiniPRTrendChart";
+import EmptyState from "@/components/EmptyState";
 
 interface PRMetricsSummary {
   open: number;
@@ -267,6 +268,14 @@ export default function PRMetrics() {
             Try again
           </button>
         </div>
+      ) : metrics && metrics.total === 0 && (!metrics.gitlab || metrics.gitlab.total === 0) ? (
+        <EmptyState
+          icon="📊"
+          title="No pull requests available"
+          description="Start reviewing or opening PRs to generate analytics."
+          actionLabel="View GitHub Profile"
+          actionHref={`https://github.com/${selectedAccount || ""}`}
+        />
       ) : activeTab === "authored" ? (
         <div className="space-y-6">
           {/* GitHub Stats */}

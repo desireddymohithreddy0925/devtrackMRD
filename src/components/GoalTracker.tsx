@@ -524,7 +524,7 @@ export default function GoalTracker() {
         <div className="mt-6">
           <EmptyState
             icon="🎯"
-            title="No goals yet"
+            title="No goals created yet"
             description="No goals yet. Create your first coding goal to start tracking progress!"
             actionLabel="Create Goal"
             actionHref="#create-goal-form"
