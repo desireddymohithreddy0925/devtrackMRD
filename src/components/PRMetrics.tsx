@@ -8,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import PRStatusDonutChart from "./PRStatusDonutChart";
 import MiniPRTrendChart from "./MiniPRTrendChart";
 import EmptyState from "@/components/EmptyState";
+import { SkeletonBlock } from "./WidgetSkeleton";
 
 interface PRMetricsSummary {
   open: number;
@@ -113,7 +114,11 @@ export default function PRMetrics() {
         label: "Lines Changed",
         value: `+${(source.totalAdditions ?? 0).toLocaleString()} / -${(source.totalDeletions ?? 0).toLocaleString()}`
       },
-      { label: labels.avgReview, value: `${source.avgReviewHours}h` },
+      {
+        label: `${labels.avgReview} ⓘ`,
+        value: `${source.avgReviewHours}h`,
+        title: "Average time from PR creation to close, based on your last 30 closed PRs",
+      },
       {
         label: labels.avgFirstReview,
         value: formatReviewCycle(source.avgFirstReviewHours),
@@ -248,18 +253,11 @@ export default function PRMetrics() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-              <div
-                key={i}
-                aria-hidden="true"
-                className="bg-[var(--card-muted)] rounded-lg p-4 h-24 animate-pulse"
-              />
+              <SkeletonBlock key={i} className="h-24 rounded-lg" />
             ))}
           </div>
-          <div className="h-[270px] rounded-lg bg-[var(--card-muted)] animate-pulse" aria-hidden="true" />
-          <div
-            className="h-[220px] rounded-lg bg-[var(--card-muted)] animate-pulse"
-            aria-hidden="true"
-          />
+          <SkeletonBlock className="h-[270px] rounded-lg" />
+          <SkeletonBlock className="h-[220px] rounded-lg" />
         </div>
       ) : error ? (
         <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-400">
