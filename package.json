@@ -118,13 +118,10 @@
       "@scarf/scarf",
       "@sentry/cli",
       "@swc/core",
-      "@tree-sitter-grammars/tree-sitter-yaml",
       "core-js-pure",
       "core-js",
       "esbuild",
       "sharp",
-      "tree-sitter-json",
-      "tree-sitter",
       "unrs-resolver"
     ]
   }
