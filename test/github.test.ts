@@ -6,6 +6,7 @@ import type {
   CommitItem,
   GitHubIssueItem,
   IssuesMetrics,
+  PaginatedReposResult,
 } from "../src/lib/github";
 
 describe("github types and interfaces", () => {
@@ -139,6 +140,17 @@ describe("github types and interfaces", () => {
         mostActiveRepo: null,
       };
       expect(metrics.mostActiveRepo).toBeNull();
+    });
+  });
+
+  describe("PaginatedReposResult", () => {
+    it("accepts valid paginated result structure", () => {
+      const result: PaginatedReposResult = {
+        repos: [],
+        hasNextPage: true,
+      };
+      expect(result.hasNextPage).toBe(true);
+      expect(Array.isArray(result.repos)).toBe(true);
     });
   });
 });

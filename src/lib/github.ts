@@ -93,6 +93,48 @@ export async function fetchUserRepos(
   return repos;
 }
 
+export interface PaginatedReposResult {
+  repos: GitHubRepo[];
+  hasNextPage: boolean;
+}
+
+/**
+ * Fetches a single page of repositories for the authenticated user.
+ * @param token - The user's GitHub personal access token.
+ * @param page - The page number to fetch.
+ * @param perPage - The number of items per page.
+ * @returns A promise that resolves to the paginated result.
+ */
+export async function fetchUserReposPaginated(
+  token: string,
+  page: number = 1,
+  perPage: number = 20
+): Promise<PaginatedReposResult> {
+  const res = await githubFetch(
+    `${GITHUB_API}/user/repos?visibility=all&sort=pushed&direction=desc&per_page=${perPage}&page=${page}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+      },
+    }
+  );
+
+  if (!res.ok) {
+    if (res.status === 401) throw new GitHubAuthError();
+    throwIfGitHubRateLimited(res);
+    throw new Error(`GitHub API error: ${res.status}`);
+  }
+
+  const repos = (await res.json()) as GitHubRepo[];
+  
+  // Check if there's a next page by looking at the Link header
+  const linkHeader = res.headers.get("Link") || "";
+  const hasNextPage = linkHeader.includes('rel="next"');
+
+  return { repos, hasNextPage };
+}
+
 export interface GitHubEvent {
   id: string;
   type: string;

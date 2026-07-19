@@ -1,5 +1,5 @@
 import { getSessionWithToken } from "@/lib/get-session-token";
-import { fetchUserRepos } from "@/lib/github";
+import { fetchUserReposPaginated } from "@/lib/github";
 import { NextRequest } from "next/server";
 import { isMetricsCacheBypassed, metricsCacheKey, withMetricsCache } from "@/lib/metrics-cache";
 import { ExplorerRepoCardData } from "@/lib/repo-analytics-types";
@@ -16,14 +16,15 @@ export async function GET(req: NextRequest) {
   const session = sessionData.session;
   const accessToken = sessionData.accessToken;
 
+  const page = parseInt(req.nextUrl.searchParams.get("page") ?? "1", 10);
+  const perPage = parseInt(req.nextUrl.searchParams.get("per_page") ?? "20", 10);
+
   const bypass = isMetricsCacheBypassed(req);
-  const key = metricsCacheKey(session.githubId ?? session.githubLogin!, "repo-explorer-v2" as any, { days: 7 });
+  const key = metricsCacheKey(session.githubId ?? session.githubLogin!, `repo-explorer-v2-p${page}-pp${perPage}` as any, { days: 7 });
 
   try {
     const data = await withMetricsCache({ bypass, key, ttlSeconds: 30 * 60 }, async () => {
-	// Paginate through all pages (up to 1000 repos) so users with more
-	// than 100 repositories see their complete list — fixes #2843.
-	const repos = await fetchUserRepos(accessToken, { perPage: 100, maxPages: 10 });
+      const { repos, hasNextPage } = await fetchUserReposPaginated(accessToken, page, perPage);
       const since = new Date();
       since.setDate(since.getDate() - 30);
       const sinceStr = since.toISOString().slice(0, 10);
@@ -88,7 +89,7 @@ export async function GET(req: NextRequest) {
 
       result.sort((a, b) => b.commitCount - a.commitCount || new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-      return { repos: result };
+      return { repos: result, hasNextPage };
     });
     return Response.json(data);
   } catch (error) {
