@@ -20,7 +20,7 @@ interface Goal {
   created_at: string;
   goal_reset_version: number;
   is_public: boolean;
-  category: string | null;
+  category: GoalCategory | null;
 }
 
 interface GoalHistory {
@@ -33,9 +33,10 @@ interface GoalHistory {
 }
 
 type Recurrence = "none" | "weekly" | "monthly";
+type GoalCategory = "side-project" | "work" | "dsa" | "open-source";
 
 const VALID_RECURRENCES = ["none", "weekly", "monthly"] as const;
-const VALID_CATEGORIES = ["Side Project", "Work", "DSA", "Open Source"] as const;
+const VALID_CATEGORIES = ["side-project", "work", "dsa", "open-source"] as const;
 const MAX_TITLE_LEN = 100;
 const MAX_UNIT_LEN = 30;
 const MIN_TARGET = 1;
@@ -231,6 +232,9 @@ try {
   const safeRecurrence: Recurrence = VALID_RECURRENCES.includes(recurrence as Recurrence)
     ? (recurrence as Recurrence)
     : "none";
+  const safeCategory: GoalCategory | null = VALID_CATEGORIES.includes(category as GoalCategory)
+    ? (category as GoalCategory)
+    : null;
 
   let safeDeadline: string | null = null;
   if (typeof deadline === "string") {
@@ -240,11 +244,6 @@ try {
       safeDeadline = d.toISOString();
     }
   }
-
-  const safeCategory =
-    typeof category === "string" && VALID_CATEGORIES.includes(category as any)
-      ? category
-      : null;
 
   const user = await resolveAppUser(session.githubId, session.githubLogin);
   if (!user) return Response.json({ error: "User not found" }, { status: 404 });
@@ -292,9 +291,9 @@ try {
       recurrence: safeRecurrence,
       period_start: getPeriodStart(safeRecurrence),
       deadline: safeDeadline,
+      category: safeCategory,
       current: 0,
       goal_reset_version: 0,
-      category: safeCategory,
     })
     .select()
     .single();
@@ -308,6 +307,7 @@ try {
     target: goal.target,
     unit: goal.unit,
     recurrence: goal.recurrence,
+    category: goal.category,
   }).catch(() => {});
 
   return Response.json({ goal }, { status: 201 });
