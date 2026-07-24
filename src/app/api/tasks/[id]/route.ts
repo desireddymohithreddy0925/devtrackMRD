@@ -21,34 +21,35 @@ export async function PUT(
 
   try {
     const body = await req.json();
-    const name = stripHtml(body.name || "").trim();
-    const description = stripHtml(body.description || "").trim();
-    const dueDate = body.dueDate || null;
-    const taskIds = body.taskIds || [];
-
-    if (!name) {
-      return new Response("Name is required", { status: 400 });
+    
+    const updates: any = {};
+    if (body.title !== undefined) {
+      updates.title = stripHtml(body.title).trim();
+      if (!updates.title) return new Response("Title cannot be empty", { status: 400 });
+    }
+    if (body.completed !== undefined) {
+      updates.completed = Boolean(body.completed);
+    }
+    if (body.milestoneId !== undefined) {
+      updates.milestone_id = body.milestoneId;
     }
 
+    updates.updated_at = new Date().toISOString();
+
     const { data: existing } = await supabaseAdmin
-      .from("milestones")
+      .from("tasks")
       .select("id")
       .eq("id", id)
       .eq("user_id", appUser.id)
       .single();
 
     if (!existing) {
-      return new Response("Milestone not found", { status: 404 });
+      return new Response("Task not found", { status: 404 });
     }
 
-    const { data: milestone, error } = await supabaseAdmin
-      .from("milestones")
-      .update({
-        name,
-        description,
-        due_date: dueDate,
-        updated_at: new Date().toISOString(),
-      })
+    const { data: task, error } = await supabaseAdmin
+      .from("tasks")
+      .update(updates)
       .eq("id", id)
       .eq("user_id", appUser.id)
       .select()
@@ -56,25 +57,7 @@ export async function PUT(
 
     if (error) throw error;
 
-    // First unlink any tasks currently linked to this milestone
-    const { error: unlinkError } = await supabaseAdmin
-      .from("tasks")
-      .update({ milestone_id: null })
-      .eq("milestone_id", id)
-      .eq("user_id", appUser.id);
-    if (unlinkError) throw unlinkError;
-
-    // Link the new tasks
-    if (taskIds.length > 0) {
-      const { error: linkError } = await supabaseAdmin
-        .from("tasks")
-        .update({ milestone_id: id })
-        .in("id", taskIds)
-        .eq("user_id", appUser.id);
-      if (linkError) throw linkError;
-    }
-
-    return new Response(JSON.stringify(milestone), {
+    return new Response(JSON.stringify(task), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -97,7 +80,7 @@ export async function DELETE(
   if (!appUser) return new Response("User not found", { status: 404 });
 
   const { error } = await supabaseAdmin
-    .from("milestones")
+    .from("tasks")
     .delete()
     .eq("id", id)
     .eq("user_id", appUser.id);

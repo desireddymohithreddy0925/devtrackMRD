@@ -8,6 +8,7 @@ export default function ProjectMilestones() {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isClient, setIsClient] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   const [showMilestoneForm, setShowMilestoneForm] = useState(false);
   const [milestoneForm, setMilestoneForm] = useState({ name: '', description: '', dueDate: '' });
@@ -16,74 +17,98 @@ export default function ProjectMilestones() {
 
   useEffect(() => {
     setIsClient(true);
-    const storedMilestones = localStorage.getItem('devtrack_project_milestones');
-    const storedTasks = localStorage.getItem('devtrack_project_tasks');
-    if (storedMilestones) setMilestones(JSON.parse(storedMilestones));
-    if (storedTasks) setTasks(JSON.parse(storedTasks));
+    Promise.all([
+      fetch('/api/milestones').then(r => r.json()),
+      fetch('/api/tasks').then(r => r.json())
+    ]).then(([mils, tsks]) => {
+      setMilestones(Array.isArray(mils) ? mils : []);
+      setTasks(Array.isArray(tsks) ? tsks : []);
+      setLoading(false);
+    }).catch(e => {
+      console.error(e);
+      setLoading(false);
+    });
   }, []);
-
-  useEffect(() => {
-    if (isClient) {
-      localStorage.setItem('devtrack_project_milestones', JSON.stringify(milestones));
-      localStorage.setItem('devtrack_project_tasks', JSON.stringify(tasks));
-    }
-  }, [milestones, tasks, isClient]);
 
   if (!isClient) return null;
 
-  const handleCreateMilestone = () => {
+  const handleCreateMilestone = async () => {
     if (!milestoneForm.name || !milestoneForm.dueDate) return;
     
-    const newMilestone: Milestone = {
-      id: crypto.randomUUID(),
-      name: milestoneForm.name,
-      description: milestoneForm.description,
-      dueDate: milestoneForm.dueDate,
-      taskIds: [],
-    };
+    const res = await fetch('/api/milestones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: milestoneForm.name,
+        description: milestoneForm.description,
+        dueDate: milestoneForm.dueDate,
+        taskIds: []
+      })
+    });
     
-    setMilestones(prev => [newMilestone, ...prev]);
-    setMilestoneForm({ name: '', description: '', dueDate: '' });
-    setShowMilestoneForm(false);
+    if (res.ok) {
+      const newMilestone = await res.json();
+      setMilestones(prev => [newMilestone, ...prev]);
+      setMilestoneForm({ name: '', description: '', dueDate: '' });
+      setShowMilestoneForm(false);
+    }
   };
 
-  const handleDeleteMilestone = (id: string) => {
-    setMilestones(prev => prev.filter(m => m.id !== id));
+  const handleDeleteMilestone = async (id: string) => {
+    const res = await fetch(`/api/milestones/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setMilestones(prev => prev.filter(m => m.id !== id));
+    }
   };
 
-  const handleAddTask = (milestoneId: string) => {
+  const handleAddTask = async (milestoneId: string) => {
     const title = taskInputs[milestoneId]?.trim();
     if (!title) return;
 
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      title,
-      completed: false
-    };
+    const res = await fetch('/api/tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, milestoneId })
+    });
 
-    setTasks(prev => [...prev, newTask]);
-    setMilestones(prev => prev.map(m => {
-      if (m.id === milestoneId) {
-        return { ...m, taskIds: [...m.taskIds, newTask.id] };
-      }
-      return m;
-    }));
+    if (res.ok) {
+      const newTask = await res.json();
+      setTasks(prev => [...prev, newTask]);
+      setMilestones(prev => prev.map(m => {
+        if (m.id === milestoneId) {
+          return { ...m, taskIds: [...(m.taskIds || []), newTask.id] };
+        }
+        return m;
+      }));
+      setTaskInputs(prev => ({ ...prev, [milestoneId]: '' }));
+    }
+  };
+
+  const handleToggleTask = async (taskId: string, currentCompleted: boolean) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !currentCompleted } : t));
     
-    setTaskInputs(prev => ({ ...prev, [milestoneId]: '' }));
+    const res = await fetch(`/api/tasks/${taskId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ completed: !currentCompleted })
+    });
+    
+    if (!res.ok) {
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: currentCompleted } : t));
+    }
   };
 
-  const handleToggleTask = (taskId: string) => {
-    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
-  };
-
-  const handleDeleteTask = (milestoneId: string, taskId: string) => {
-    setTasks(prev => prev.filter(t => t.id !== taskId));
-    setMilestones(prev => prev.map(m => {
-      if (m.id === milestoneId) {
-        return { ...m, taskIds: m.taskIds.filter(id => id !== taskId) };
-      }
-      return m;
-    }));
+  const handleDeleteTask = async (milestoneId: string, taskId: string) => {
+    const res = await fetch(`/api/tasks/${taskId}`, { method: 'DELETE' });
+    if (res.ok) {
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      setMilestones(prev => prev.map(m => {
+        if (m.id === milestoneId) {
+          return { ...m, taskIds: (m.taskIds || []).filter(id => id !== taskId) };
+        }
+        return m;
+      }));
+    }
   };
 
   return (
@@ -154,7 +179,11 @@ export default function ProjectMilestones() {
         </div>
       )}
 
-      {milestones.length === 0 ? (
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>
+          Loading milestones...
+        </div>
+      ) : milestones.length === 0 ? (
          <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--muted-foreground)', fontSize: '0.875rem' }}>
           <Target size={32} style={{ opacity: 0.3, margin: '0 auto 8px' }} />
           <p style={{ margin: 0 }}>No project milestones yet. Create one to start tracking!</p>
@@ -162,7 +191,7 @@ export default function ProjectMilestones() {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {milestones.map(m => {
-            const mTasks = m.taskIds.map(id => tasks.find(t => t.id === id)).filter((t): t is Task => !!t);
+            const mTasks = (m.taskIds || []).map(id => tasks.find(t => t.id === id)).filter((t): t is Task => !!t);
             const totalTasks = mTasks.length;
             const completedTasks = mTasks.filter(t => t.completed).length;
             const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -198,7 +227,7 @@ export default function ProjectMilestones() {
                     <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {mTasks.map(task => (
                         <li key={task.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', fontSize: '0.85rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => handleToggleTask(task.id)}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => handleToggleTask(task.id, task.completed)}>
                             {task.completed ? <CheckCircle2 size={16} color="#10b981" /> : <Circle size={16} color="var(--muted-foreground)" />}
                             <span style={{ textDecoration: task.completed ? 'line-through' : 'none', color: task.completed ? 'var(--muted-foreground)' : 'var(--foreground)' }}>{task.title}</span>
                           </div>
