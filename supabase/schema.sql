@@ -343,6 +343,10 @@ create table if not exists tasks (
   user_id      text not null references users(id) on delete cascade,
   title        text not null,
   completed    boolean not null default false,
+  status       text not null default 'todo',
+  priority     text not null default 'medium',
+  due_date     timestamptz,
+  tags         text[] not null default '{}'::text[],
   milestone_id text,
   created_at   timestamptz default now(),
   updated_at   timestamptz default now()

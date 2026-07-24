@@ -48,6 +48,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const title = stripHtml(body.title || "").trim();
     const milestone_id = body.milestoneId || null;
+    const status = stripHtml(body.status || "todo").trim();
+    const priority = stripHtml(body.priority || "medium").trim();
+    const due_date = body.dueDate || null;
+    const tags = Array.isArray(body.tags) ? body.tags.map((t: string) => stripHtml(t).trim()) : [];
 
     if (!title) {
       return new Response("Title is required", { status: 400 });
@@ -60,6 +64,10 @@ export async function POST(req: Request) {
         title,
         milestone_id,
         completed: false,
+        status,
+        priority,
+        due_date,
+        tags
       })
       .select()
       .single();

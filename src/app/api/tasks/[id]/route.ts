@@ -30,6 +30,18 @@ export async function PUT(
     if (body.completed !== undefined) {
       updates.completed = Boolean(body.completed);
     }
+    if (body.status !== undefined) {
+      updates.status = stripHtml(body.status).trim();
+    }
+    if (body.priority !== undefined) {
+      updates.priority = stripHtml(body.priority).trim();
+    }
+    if (body.dueDate !== undefined) {
+      updates.due_date = body.dueDate;
+    }
+    if (body.tags !== undefined && Array.isArray(body.tags)) {
+      updates.tags = body.tags.map((t: string) => stripHtml(t).trim());
+    }
     if (body.milestoneId !== undefined) {
       updates.milestone_id = body.milestoneId;
     }
